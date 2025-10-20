@@ -39,7 +39,7 @@ const usuarioSchema = new mongoose.Schema({
 });
 
 // Crear modelo (usando la colección 'usuarios' que ya tienes)
-const Usuario = mongoose.model('Usuario', usuarioSchema, 'usuarios');
+const Usuario = mongoose.model('Usuario', usuarioSchema, 'usuarios_biblioteca');
 
 app.get('/', (req, res) => {
   res.json({ message: 'Servidor funcionando' });
