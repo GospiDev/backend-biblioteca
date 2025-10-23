@@ -17,11 +17,9 @@ const libroSchema = new mongoose.Schema({
     type: Number
   }
 }, {
-  // timestamps: true agrega automáticamente los campos createdAt y updatedAt
   timestamps: true 
 });
 
-// Mongoose creará una colección llamada 'libros' (el plural de 'Libro')
 const Libro = mongoose.model('Libro', libroSchema);
 
 module.exports = Libro;

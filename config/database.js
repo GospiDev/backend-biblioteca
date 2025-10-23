@@ -10,7 +10,6 @@ const connectDB = async () => {
 
     console.log(`✅ MongoDB conectado: ${conn.connection.host}`);
     
-    // Verificar el estado de la conexión
     mongoose.connection.on('connected', () => {
       console.log('📡 Mongoose conectado a MongoDB');
     });
