@@ -97,6 +97,13 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+const usuarioRoutes = require('./routes/usuario.routes');
+app.use('/api/users', usuarioRoutes);
+
+// AÑADE ESTAS DOS LÍNEAS PARA LOS LIBROS
+const libroRoutes = require('./routes/libro.routes');
+app.use('/api/libros', libroRoutes);
+
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
