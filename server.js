@@ -6,43 +6,23 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-  console.log('✅ Conectado a MongoDB Atlas exitosamente');
-})
-.catch((error) => {
-  console.error('❌ Error conectando a MongoDB:', error);
-});
+  .then(() => {
+    console.log('✅ Conectado a MongoDB Atlas exitosamente');
+  })
+  .catch((error) => {
+    console.error('❌ Error conectando a MongoDB:', error);
+  });
 
-const usuarioSchema = new mongoose.Schema({
-  nombreCompleto: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  edad: Number,
-  activo: {
-    type: Boolean,
-    default: true
-  },
-  fechaCreacion: String
-}, {
-  timestamps: true
-});
-
-// Crear modelo (usando la colección 'usuarios' que ya tienes)
-const Usuario = mongoose.model('Usuario', usuarioSchema, 'usuarios_biblioteca');
-
+// --- Rutas de Estado y Bienvenida ---
 app.get('/', (req, res) => {
-  res.json({ message: 'Servidor funcionando' });
+  res.json({ message: 'Servidor de la Biblioteca funcionando' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -52,57 +32,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Obtener todos los usuarios
-app.get('/api/users', async (req, res) => {
-  try {
-    const usuarios = await Usuario.find();
-    res.json(usuarios);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
-// Crear nuevo usuario
-app.post('/api/users', async (req, res) => {
-  try {
-    const nuevoUsuario = new Usuario(req.body);
-    const usuarioGuardado = await nuevoUsuario.save();
-    res.status(201).json(usuarioGuardado);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+// --- Conectar Rutas de la API ---
 
-// Actualizar usuario (para cambiar estado activo)
-app.put('/api/users/:id', async (req, res) => {
-  try {
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.json(usuarioActualizado);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Eliminar usuario
-app.delete('/api/users/:id', async (req, res) => {
-  try {
-    await Usuario.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Usuario eliminado' });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-const usuarioRoutes = require('./routes/usuario.routes');
-app.use('/api/users', usuarioRoutes);
-
-// AÑADE ESTAS DOS LÍNEAS PARA LOS LIBROS
+// Conectamos SOLAMENTE las rutas de los libros, que son las que existen.
 const libroRoutes = require('./routes/libro.routes');
 app.use('/api/libros', libroRoutes);
+
+// Toda la lógica de usuarios se ha eliminado de aquí.
+
 
 // Iniciar servidor
 app.listen(PORT, () => {
