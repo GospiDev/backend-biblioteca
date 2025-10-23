@@ -10,10 +10,13 @@ const prestamoSchema = new mongoose.Schema({
     required: [true, 'El nombre del libro es obligatorio']
   },
   fechaPrestamo: {
-    type: Number
+    type: null,
+    required: [true, 'La fecha de prestamo es obligatoria']
+
   },
   fechaDevolucion: {
-    type: Number
+    type: null,
+    required: [true, 'La fecha de prestamo es obligatoria']
   }}, 
 {
   timestamps: true 
