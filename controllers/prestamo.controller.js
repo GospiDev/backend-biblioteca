@@ -14,10 +14,11 @@ exports.getPrestamos = async (req, res) => {
 exports.createPrestamos = async (req, res) => {
   try {
     const nuevoPrestamo = new Prestamo(req.body);
-    const prestamoGuardado = await nuevoPrestamo.save()
+    const prestamoGuardado = await nuevoPrestamo.save();
+    const prestamoPopulado = await Prestamo.findById(prestamoGuardado._id)
       .populate('usuario')
       .populate('libro');
-    res.status(201).json(prestamoGuardado);
+    res.status(201).json(prestamoPopulado);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear el prestamo', error: error.message });
   }
