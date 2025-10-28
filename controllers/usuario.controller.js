@@ -9,8 +9,8 @@ exports.getUsuarios = async (req, res) => {
 
       filtro = {
         $or: [
-          { titulo: regex },
-          { autor: regex }
+          { nombre: regex },
+          { rut: regex }
         ]
       };
     }
