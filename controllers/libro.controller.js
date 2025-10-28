@@ -2,7 +2,19 @@ const Libro = require('../models/libro.model');
 
 exports.getLibros = async (req, res) => {
   try {
-    const libros = await Libro.find();
+    const { search } = req.query;
+    let filtro = {};
+    if (search) {
+      const regex = new RegExp(search, 'i');
+
+      filtro = {
+        $or: [
+          { titulo: regex },
+          { autor: regex }
+        ]
+      };
+    }
+    const libros = await Libro.find(filtro);
     res.json(libros);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los libros', error: error.message });

@@ -2,7 +2,19 @@ const Usuario = require('../models/usuario.model');
 
 exports.getUsuarios = async (req, res) => {
   try {
-    const usuarios = await Usuario.find();
+    const { search } = req.query;
+    let filtro = {};
+    if (search) {
+      const regex = new RegExp(search, 'i');
+
+      filtro = {
+        $or: [
+          { titulo: regex },
+          { autor: regex }
+        ]
+      };
+    }
+    const usuarios = await Usuario.find(filtro);
     res.json(usuarios);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los usuarios', error: error.message });
