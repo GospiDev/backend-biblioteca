@@ -1,4 +1,4 @@
-const Usuario = require('../models/usuario.model');
+const Prestamo = require('../models/prestamo.model');
 
 exports.getPrestamos = async (req, res) => {
   try {
