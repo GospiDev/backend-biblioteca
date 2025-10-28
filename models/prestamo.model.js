@@ -2,20 +2,22 @@ const mongoose = require('mongoose');
 
 const prestamoSchema = new mongoose.Schema({
   usuario: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario',
     required: [true, 'El usuario/rut es obligatorio']
   },
   libro: {
-    type: String,
-    required: [true, 'El nombre del libro es obligatorio']
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Libro',
+    required: [true, 'El libro es obligatorio']
   },
   fechaPrestamo: {
-    type: null,
+    type: Date,
     required: [true, 'La fecha de prestamo es obligatoria']
 
   },
   fechaDevolucion: {
-    type: null,
+    type: Date,
     required: [true, 'La fecha de prestamo es obligatoria']
   }}, 
 {

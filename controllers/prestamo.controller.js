@@ -2,17 +2,21 @@ const Prestamo = require('../models/prestamo.model');
 
 exports.getPrestamos = async (req, res) => {
   try {
-    const prestamos = await Prestamo.find();
+    const prestamos = await Prestamo.find()
+      .populate('usuario')
+      .populate('libro');
     res.json(prestamos);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los prestamos', error: error.message });
   }
 };
 
-exports.createPrestamos = async (req, res) => {
+exports.createPrestamo = async (req, res) => {
   try {
     const nuevoPrestamo = new Prestamo(req.body);
-    const prestamoGuardado = await nuevoPrestamo.save();
+    const prestamoGuardado = await nuevoPrestamo.save()
+      .populate('usuario')
+      .populate('libro');
     res.status(201).json(prestamoGuardado);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear el prestamo', error: error.message });
@@ -25,7 +29,7 @@ exports.updatePrestamo = async (req, res) => {
       req.params.id, 
       req.body, 
       { new: true }
-    );
+    ).populate('usuario').populate('libro');
     if (!prestamoActualizado) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
