@@ -36,7 +36,7 @@ const usuarioRoutes = require('./routes/usuario.routes');
 app.use('/api/usuario', usuarioRoutes);
 
 const prestamoRoutes = require('./routes/prestamo.routes');
-app.use('/api/prestamo', prestamoRoutes);
+app.use('/api/prestamos', prestamoRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
