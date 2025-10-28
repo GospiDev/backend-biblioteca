@@ -11,7 +11,7 @@ exports.getPrestamos = async (req, res) => {
   }
 };
 
-exports.createPrestamo = async (req, res) => {
+exports.createPrestamos = async (req, res) => {
   try {
     const nuevoPrestamo = new Prestamo(req.body);
     const prestamoGuardado = await nuevoPrestamo.save()
