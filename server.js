@@ -33,7 +33,7 @@ const libroRoutes = require('./routes/libro.routes');
 app.use('/api/libros', libroRoutes);
 
 const usuarioRoutes = require('./routes/usuario.routes');
-app.use('/api/usuario', usuarioRoutes);
+app.use('/api/usuarios', usuarioRoutes);
 
 const prestamoRoutes = require('./routes/prestamo.routes');
 app.use('/api/prestamos', prestamoRoutes);
