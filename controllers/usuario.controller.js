@@ -33,15 +33,22 @@ exports.createUsuario = async (req, res) => {
 
 exports.updateUsuario = async (req, res) => {
   try {
-    const usuarioActualizado = await Usuario.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { new: true }
-    );
-    if (!usuarioActualizado) {
+    const { password, ...otrosDatos } = req.body;
+
+    const usuario = await Usuario.findById(req.params.id);
+    if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
+
+    Object.assign(usuario, otrosDatos);
+
+    if (password && password.length > 0) {
+      usuario.password = password;
+    }
+
+    const usuarioActualizado = await usuario.save();
     res.json(usuarioActualizado);
+
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar el usuario', error: error.message });
   }
