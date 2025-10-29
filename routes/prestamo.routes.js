@@ -5,7 +5,7 @@ const prestamoController = require('../controllers/prestamo.controller');
 
 router.get('/', prestamoController.getPrestamos);
 
-router.post('/', prestamoController.createPrestamos);
+router.post('/', prestamoController.createPrestamo);
 
 router.put('/:id', prestamoController.updatePrestamo);
 
