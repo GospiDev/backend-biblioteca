@@ -1,4 +1,5 @@
 const Prestamo = require('../models/prestamo.model');
+const Usuario = require('../models/usuario.model');
 
 exports.getPrestamos = async (req, res) => {
   try {
@@ -11,14 +12,34 @@ exports.getPrestamos = async (req, res) => {
   }
 };
 
-exports.createPrestamos = async (req, res) => {
+exports.createPrestamo = async (req, res) => {
   try {
+    const { usuario: usuarioId, libro: libroId } = req.body;
+
+    const usuario = await Usuario.findById(usuarioId);
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (usuario.situacion === 'Atrasado' || usuario.situacion === 'Bloqueado') {
+      return res.status(403).json({
+        message: `El usuario ${usuario.nombre} está ${usuario.situacion} y no puede pedir préstamos.`
+      });
+    }
+    
     const nuevoPrestamo = new Prestamo(req.body);
     const prestamoGuardado = await nuevoPrestamo.save();
+
+    usuario.situacion = 'Préstamo Activo';
+    await usuario.save();
+
     const prestamoPopulado = await Prestamo.findById(prestamoGuardado._id)
       .populate('usuario')
       .populate('libro');
+
     res.status(201).json(prestamoPopulado);
+
   } catch (error) {
     res.status(400).json({ message: 'Error al crear el prestamo', error: error.message });
   }

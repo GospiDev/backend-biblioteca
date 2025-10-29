@@ -15,7 +15,7 @@ const usuarioSchema = new mongoose.Schema({
   },
   situacion: {
     type: String,
-    enum: ['Vigente','Atrasado','Bloqueado'],
+    enum: ['Vigente','Atrasado','Bloqueado','Prestamo Activo'],
     default: 'Vigente'
   }
 }, 
