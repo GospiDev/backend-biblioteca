@@ -31,7 +31,7 @@ exports.createPrestamo = async (req, res) => {
     const nuevoPrestamo = new Prestamo(req.body);
     const prestamoGuardado = await nuevoPrestamo.save();
 
-    usuario.situacion = 'Préstamo Activo';
+    usuario.situacion = 'Prestamo Activo';
     await usuario.save();
 
     const prestamoPopulado = await Prestamo.findById(prestamoGuardado._id)
