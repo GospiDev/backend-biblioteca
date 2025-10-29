@@ -13,6 +13,11 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     required: [true, 'El rut es obligatorio']
   },
+  situacion: {
+    type: String,
+    enum: ['Vigente','Atrasado','Bloqueado'],
+    default: 'Vigente'
+  }
 }, 
 {
   timestamps: true 
