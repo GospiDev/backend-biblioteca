@@ -4,11 +4,17 @@ const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
   try {
-    const { correo, password } = req.body;
+    const { loginIdentifier, password } = req.body;
 
-    const usuario = await Usuario.findOne({ correo: correo });
+    const usuario = await Usuario.findOne({
+      $or: [
+        { correo: loginIdentifier },
+        { nombre: loginIdentifier } 
+      ]
+    });
+
     if (!usuario) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+      return res.status(404).json({ message: 'Usuario o correo no encontrado' });
     }
 
     const isMatch = await bcrypt.compare(password, usuario.password);
@@ -20,13 +26,12 @@ exports.login = async (req, res) => {
       id: usuario._id,
       rol: usuario.rol
     };
-
     const token = jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1d' } 
+      { expiresIn: '1d' }
     );
-
+    
     res.json({ token });
 
   } catch (error) {
