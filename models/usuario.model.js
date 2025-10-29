@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const usuarioSchema = new mongoose.Schema({
   nombre: {
@@ -13,6 +14,15 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     required: [true, 'El rut es obligatorio']
   },
+  rol: {
+    type: String,
+    enum: ['Admin', 'Usuario'],
+    default: 'Usuario'
+  },
+  password: {
+    type: String,
+    required: true
+  },
   situacion: {
     type: String,
     enum: ['Vigente','Atrasado','Bloqueado','Prestamo Activo'],
@@ -21,6 +31,16 @@ const usuarioSchema = new mongoose.Schema({
 }, 
 {
   timestamps: true 
+});
+
+usuarioSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
