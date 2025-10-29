@@ -22,7 +22,7 @@ exports.createPrestamo = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    if (usuario.situacion === 'Atrasado' || usuario.situacion === 'Bloqueado') {
+    if (usuario.situacion === 'Atrasado' || usuario.situacion === 'Bloqueado' || usuario.situacion === 'Prestamo Activo') {
       return res.status(403).json({
         message: `El usuario ${usuario.nombre} está ${usuario.situacion} y no puede pedir préstamos.`
       });
@@ -63,11 +63,24 @@ exports.updatePrestamo = async (req, res) => {
 
 exports.deletePrestamo = async (req, res) => {
   try {
-    const prestamoEliminado = await Prestamo.findByIdAndDelete(req.params.id);
-     if (!prestamoEliminado) {
+    const prestamo = await Prestamo.findById(req.params.id);
+    if (!prestamo) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
-    res.json({ message: 'Prestamo eliminado exitosamente' });
+    const usuarioId = prestamo.usuario;
+
+    await Prestamo.findByIdAndDelete(req.params.id);
+
+    const otrosPrestamos = await Prestamo.countDocuments({ usuario: usuarioId });
+
+    if (otrosPrestamos === 0) {
+      const usuario = await Usuario.findById(usuarioId);
+      if (usuario && (usuario.situacion === 'Prestamo Activo')) {
+         await Usuario.findByIdAndUpdate(usuarioId, { situacion: 'Vigente' });
+      }
+    }
+    
+    res.json({ message: 'Préstamo devuelto (y usuario actualizado si aplica)' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar el prestamo', error: error.message });
   }
