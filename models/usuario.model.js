@@ -14,6 +14,11 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     required: [true, 'El rut es obligatorio']
   },
+  cargo: {
+    type: String,
+    enum: ['Estudiante', 'Docente', 'Bibliotecario'],
+    default: 'Estudiante'
+  },
   rol: {
     type: String,
     enum: ['Admin', 'Usuario'],

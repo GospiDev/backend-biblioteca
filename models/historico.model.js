@@ -15,9 +15,20 @@ const historicoSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  fechaDevolucion: {
+  fechaDevolucionReal: {
     type: Date,
     default: Date.now
+  },
+  fechaDevolucionEstimada: {
+    type: Date
+  },
+  estadoEntrega: { 
+    type: String,
+    enum: ['A tiempo', 'Atrasado']
+  },
+  observaciones: {
+    type: String,
+    default: 'Sin observaciones'
   }
 }, { timestamps: true });
 

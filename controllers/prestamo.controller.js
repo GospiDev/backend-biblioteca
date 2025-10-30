@@ -58,17 +58,30 @@ exports.createPrestamo = async (req, res) => {
   }
 };
 
-exports.deletePrestamo = async (req, res) => {
+exports.archivarPrestamo = async (req, res) => {
   try {
+    const { observaciones } = req.body;
     const prestamo = await Prestamo.findById(req.params.id);
     if (!prestamo) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
 
+    let estadoFinal = 'A tiempo';
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    if (prestamo.fechaDevolucion && hoy > prestamo.fechaDevolucion) {
+      estadoFinal = 'Atrasado';
+    }
+
     const nuevoHistorico = new Historico({
       usuario: prestamo.usuario,
       libro: prestamo.libro,
-      fechaPrestamo: prestamo.fechaPrestamo
+      fechaPrestamo: prestamo.fechaPrestamo,
+      fechaDevolucionEstimada: prestamo.fechaDevolucion,
+      fechaDevolucionReal: new Date(),
+      estadoEntrega: estadoFinal,
+      observaciones: observaciones || 'Sin observaciones'
     });
     await nuevoHistorico.save();
 
@@ -91,7 +104,7 @@ exports.deletePrestamo = async (req, res) => {
   }
 };
 
-exports.borrarPrestamoPorError = async (req, res) => {
+exports.eliminarPrestamoCorrecion = async (req, res) => {
   try {
     const prestamo = await Prestamo.findById(req.params.id);
     if (!prestamo) {

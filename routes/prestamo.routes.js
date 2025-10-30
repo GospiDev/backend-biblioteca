@@ -9,9 +9,9 @@ router.post('/', prestamoController.createPrestamo);
 
 router.put('/:id', prestamoController.updatePrestamo);
 
-router.delete('/:id', prestamoController.deletePrestamo);
+router.post('/devolver/:id', prestamoController.archivarPrestamo);
 
-router.delete('/corregir/:id', prestamoController.borrarPrestamoPorError);
+router.delete('/eliminar/:id', prestamoController.eliminarPrestamoCorrecion);
 
 router.get('/historial', prestamoController.getHistorial);
 
