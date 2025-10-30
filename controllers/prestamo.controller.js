@@ -17,6 +17,17 @@ exports.createPrestamo = async (req, res) => {
   try {
     const { usuario: usuarioId, libro: libroId } = req.body;
 
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    if (usuario.situacion !== 'Vigente') { 
+      return res.status(403).json({ 
+        message: `El usuario ${usuario.nombre} tiene un estado de "${usuario.situacion}" y no puede pedir préstamos.`
+      });
+    }
+    
     const libro = await Libro.findById(libroId);
     if (!libro) {
       return res.status(404).json({ message: 'Libro no encontrado' });
@@ -30,12 +41,15 @@ exports.createPrestamo = async (req, res) => {
     const nuevoPrestamo = new Prestamo(req.body);
     await nuevoPrestamo.save();
 
-    usuario.situacion = 'Prestamo Activo';
+    usuario.situacion = 'Prestamo Activo'; 
     await usuario.save();
-    libro.cantidad -= 1;
+    libro.cantidad -= 1; 
     await libro.save();
 
-    const prestamoPopulado = await Prestamo.findById(nuevoPrestamo._id).populate('usuario').populate('libro');
+    const prestamoPopulado = await Prestamo.findById(nuevoPrestamo._id)
+      .populate('usuario')
+      .populate('libro');
+
     res.status(201).json(prestamoPopulado);
 
   } catch (error) {
@@ -54,9 +68,18 @@ exports.deletePrestamo = async (req, res) => {
     const libroId = prestamo.libro;
 
     await Prestamo.findByIdAndDelete(req.params.id);
-
+    
     await Libro.findByIdAndUpdate(libroId, { $inc: { cantidad: 1 } });
 
+    const otrosPrestamos = await Prestamo.countDocuments({ usuario: usuarioId });
+
+    if (otrosPrestamos === 0) {
+      const usuario = await Usuario.findById(usuarioId);
+      if (usuario && (usuario.situacion === 'Prestamo Activo')) {
+         await Usuario.findByIdAndUpdate(usuarioId, { situacion: 'Vigente' });
+      }
+    }
+    
     res.json({ message: 'Préstamo devuelto y libro re-abastecido' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar el prestamo', error: error.message });
