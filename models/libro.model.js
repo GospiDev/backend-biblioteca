@@ -15,6 +15,12 @@ const libroSchema = new mongoose.Schema({
   },
   ano: {
     type: Number
+  },
+  cantidad: {
+    type: Number,
+    required: true,
+    default: 1,
+    min: 0
   }
 }, {
   timestamps: true 

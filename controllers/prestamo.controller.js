@@ -1,5 +1,6 @@
 const Prestamo = require('../models/prestamo.model');
 const Usuario = require('../models/usuario.model');
+const Libro = require('../models/libro.model');
 
 exports.getPrestamos = async (req, res) => {
   try {
@@ -16,28 +17,25 @@ exports.createPrestamo = async (req, res) => {
   try {
     const { usuario: usuarioId, libro: libroId } = req.body;
 
-    const usuario = await Usuario.findById(usuarioId);
-
-    if (!usuario) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+    const libro = await Libro.findById(libroId);
+    if (!libro) {
+      return res.status(404).json({ message: 'Libro no encontrado' });
     }
-
-    if (usuario.situacion === 'Atrasado' || usuario.situacion === 'Bloqueado' || usuario.situacion === 'Prestamo Activo') {
-      return res.status(403).json({
-        message: `El usuario ${usuario.nombre} está ${usuario.situacion} y no puede pedir préstamos.`
+    if (libro.cantidad === 0) {
+      return res.status(400).json({ 
+        message: `No quedan copias disponibles de "${libro.titulo}"` 
       });
     }
-    
+
     const nuevoPrestamo = new Prestamo(req.body);
-    const prestamoGuardado = await nuevoPrestamo.save();
+    await nuevoPrestamo.save();
 
     usuario.situacion = 'Prestamo Activo';
     await usuario.save();
+    libro.cantidad -= 1;
+    await libro.save();
 
-    const prestamoPopulado = await Prestamo.findById(prestamoGuardado._id)
-      .populate('usuario')
-      .populate('libro');
-
+    const prestamoPopulado = await Prestamo.findById(nuevoPrestamo._id).populate('usuario').populate('libro');
     res.status(201).json(prestamoPopulado);
 
   } catch (error) {
@@ -45,19 +43,23 @@ exports.createPrestamo = async (req, res) => {
   }
 };
 
-exports.updatePrestamo = async (req, res) => {
+exports.deletePrestamo = async (req, res) => {
   try {
-    const prestamoActualizado = await Prestamo.findByIdAndUpdate(
-      req.params.id, 
-      req.body, 
-      { new: true }
-    ).populate('usuario').populate('libro');
-    if (!prestamoActualizado) {
+    const prestamo = await Prestamo.findById(req.params.id);
+    if (!prestamo) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
-    res.json(prestamoActualizado);
+    
+    const usuarioId = prestamo.usuario;
+    const libroId = prestamo.libro;
+    
+    await Prestamo.findByIdAndDelete(req.params.id);
+
+    await Libro.findByIdAndUpdate(libroId, { $inc: { cantidad: 1 } });
+
+    res.json({ message: 'Préstamo devuelto y libro re-abastecido' });
   } catch (error) {
-    res.status(400).json({ message: 'Error al actualizar el prestamo', error: error.message });
+    res.status(500).json({ message: 'Error al eliminar el prestamo', error: error.message });
   }
 };
 
