@@ -11,4 +11,8 @@ router.put('/:id', prestamoController.updatePrestamo);
 
 router.delete('/:id', prestamoController.deletePrestamo);
 
+router.delete('/corregir/:id', prestamoController.borrarPrestamoPorError);
+
+router.get('/historial', prestamoController.getHistorial);
+
 module.exports = router;

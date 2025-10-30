@@ -1,6 +1,7 @@
 const Prestamo = require('../models/prestamo.model');
 const Usuario = require('../models/usuario.model');
 const Libro = require('../models/libro.model');
+const Historico = require('../models/historico.model');
 
 exports.getPrestamos = async (req, res) => {
   try {
@@ -63,26 +64,69 @@ exports.deletePrestamo = async (req, res) => {
     if (!prestamo) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
-    
-    const usuarioId = prestamo.usuario;
-    const libroId = prestamo.libro;
+
+    const nuevoHistorico = new Historico({
+      usuario: prestamo.usuario,
+      libro: prestamo.libro,
+      fechaPrestamo: prestamo.fechaPrestamo
+    });
+    await nuevoHistorico.save();
 
     await Prestamo.findByIdAndDelete(req.params.id);
+
+    await Libro.findByIdAndUpdate(prestamo.libro, { $inc: { cantidad: 1 } });
     
-    await Libro.findByIdAndUpdate(libroId, { $inc: { cantidad: 1 } });
-
-    const otrosPrestamos = await Prestamo.countDocuments({ usuario: usuarioId });
-
+    const otrosPrestamos = await Prestamo.countDocuments({ usuario: prestamo.usuario });
     if (otrosPrestamos === 0) {
-      const usuario = await Usuario.findById(usuarioId);
+      const usuario = await Usuario.findById(prestamo.usuario);
       if (usuario && (usuario.situacion === 'Prestamo Activo')) {
-         await Usuario.findByIdAndUpdate(usuarioId, { situacion: 'Vigente' });
+         await Usuario.findByIdAndUpdate(prestamo.usuario, { situacion: 'Vigente' });
       }
     }
     
-    res.json({ message: 'Préstamo devuelto y libro re-abastecido' });
+    res.json({ message: 'Préstamo archivado y libro re-abastecido' });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el prestamo', error: error.message });
+    res.status(500).json({ message: 'Error al archivar el prestamo', error: error.message });
+  }
+};
+
+exports.borrarPrestamoPorError = async (req, res) => {
+  try {
+    const prestamo = await Prestamo.findById(req.params.id);
+    if (!prestamo) {
+      return res.status(404).json({ message: 'Prestamo no encontrado' });
+    }
+
+    await Libro.findByIdAndUpdate(prestamo.libro, { $inc: { cantidad: 1 } });
+
+    await Prestamo.findByIdAndDelete(req.params.id);
+
+    const otrosPrestamos = await Prestamo.countDocuments({ usuario: prestamo.usuario });
+    if (otrosPrestamos === 0) {
+      const usuario = await Usuario.findById(prestamo.usuario);
+      if (usuario && (usuario.situacion === 'Prestamo Activo')) {
+         await Usuario.findByIdAndUpdate(prestamo.usuario, { situacion: 'Vigente' });
+      }
+    }
+
+    res.json({ message: 'Préstamo erróneo eliminado y libro re-abastecido' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error al borrar el prestamo', error: error.message });
+  }
+};
+
+exports.getHistorial = async (req, res) => {
+  try {
+    const historial = await Historico.find()
+      .populate('usuario')
+      .populate('libro')
+      .sort({ fechaDevolucion: -1 });
+      
+    res.json(historial);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener el historial', error: error.message });
   }
 };
 
