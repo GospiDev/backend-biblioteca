@@ -52,7 +52,7 @@ exports.deletePrestamo = async (req, res) => {
     
     const usuarioId = prestamo.usuario;
     const libroId = prestamo.libro;
-    
+
     await Prestamo.findByIdAndDelete(req.params.id);
 
     await Libro.findByIdAndUpdate(libroId, { $inc: { cantidad: 1 } });
@@ -63,27 +63,23 @@ exports.deletePrestamo = async (req, res) => {
   }
 };
 
-exports.deletePrestamo = async (req, res) => {
+exports.updatePrestamo = async (req, res) => {
   try {
-    const prestamo = await Prestamo.findById(req.params.id);
-    if (!prestamo) {
+    const prestamoActualizado = await Prestamo.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true } 
+    )
+    .populate('usuario')
+    .populate('libro');
+
+    if (!prestamoActualizado) {
       return res.status(404).json({ message: 'Prestamo no encontrado' });
     }
-    const usuarioId = prestamo.usuario;
-
-    await Prestamo.findByIdAndDelete(req.params.id);
-
-    const otrosPrestamos = await Prestamo.countDocuments({ usuario: usuarioId });
-
-    if (otrosPrestamos === 0) {
-      const usuario = await Usuario.findById(usuarioId);
-      if (usuario && (usuario.situacion === 'Prestamo Activo')) {
-         await Usuario.findByIdAndUpdate(usuarioId, { situacion: 'Vigente' });
-      }
-    }
     
-    res.json({ message: 'Préstamo devuelto (y usuario actualizado si aplica)' });
+    res.json(prestamoActualizado);
+    
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el prestamo', error: error.message });
+    res.status(400).json({ message: 'Error al actualizar el prestamo', error: error.message });
   }
 };
